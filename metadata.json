@@ -1,0 +1,6 @@
+{
+  "name": "Artistic Muse & Creative Content Architect",
+  "description": "Nàng Thơ Kỹ Thuật Số - Người đồng hành sáng tạo, giúp chuyển hóa suy nghĩ thành những tác phẩm nghệ thuật tinh mỹ với 4 không gian: Nhật ký, Tản văn, Sáng tác và Phê bình.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
