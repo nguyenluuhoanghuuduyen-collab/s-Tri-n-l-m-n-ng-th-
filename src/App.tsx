@@ -6,6 +6,9 @@ import VisualCanvas from "./components/VisualCanvas";
 import PromptSuggestions from "./components/PromptSuggestions";
 import CreationHistory from "./components/CreationHistory";
 import { HeartHandshake, BookOpen, Sparkles, Compass, Feather, Archive, FileText, Info, Key } from "lucide-react";
+import BackgroundEffect from "./components/BackgroundEffect";
+import AmbientPlayer from "./components/AmbientPlayer";
+import { motion } from "motion/react";
 
 // Pre-loaded stunning demo creations to prevent blank cold-start
 const INITIAL_DEMOS: Record<CreativeSpace, SavedCreation> = {
@@ -364,10 +367,12 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#2D2526] flex flex-col font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-[#FDFBF7]/40 flex flex-col font-sans transition-colors duration-300 relative">
+      {/* Dynamic Poetic Background Effect */}
+      <BackgroundEffect />
       
       {/* Dynamic Poetic Nav / Header */}
-      <header className="border-b border-stone-200/50 bg-[#FDFBF7]/80 backdrop-blur-md sticky top-0 z-30 px-4 py-4 md:px-8">
+      <header className="border-b border-stone-200/40 bg-white/60 backdrop-blur-md sticky top-0 z-30 px-4 py-4 md:px-8">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-600 to-rose-400 flex items-center justify-center text-white shadow-md">
@@ -376,7 +381,7 @@ export default function App() {
             <div>
               <h1 className="font-serif text-lg md:text-xl font-bold tracking-wide text-stone-800 flex items-center gap-2">
                 Nàng Thơ Kỹ Thuật Số
-                <span className="hidden md:inline-block text-[10px] uppercase font-mono tracking-widest bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full font-normal">
+                <span className="hidden md:inline-block text-[10px] uppercase font-mono tracking-widest bg-stone-100/80 text-stone-500 px-2 py-0.5 rounded-full font-normal">
                   Artistic Muse
                 </span>
               </h1>
@@ -385,8 +390,11 @@ export default function App() {
           </div>
 
           {/* Functional Spaces Ribbon Switcher & Settings */}
-          <div className="flex items-center gap-3 max-w-full">
-            <nav className="flex bg-stone-100 p-1 rounded-xl border border-stone-200 shadow-sm max-w-full overflow-x-auto">
+          <div className="flex items-center gap-3 max-w-full z-10">
+            {/* Ambient Relax Sound Player */}
+            <AmbientPlayer />
+
+            <nav className="flex bg-stone-100/80 p-1 rounded-xl border border-stone-200 shadow-sm max-w-full overflow-x-auto">
               {(["diary", "prose", "creative", "criticism"] as const).map((space) => {
                 const active = activeSpace === space;
                 return (
@@ -412,8 +420,8 @@ export default function App() {
               onClick={() => setShowApiKeyInput(!showApiKeyInput)}
               className={`p-2.5 rounded-xl border transition-all cursor-pointer flex-shrink-0 ${
                 userApiKey 
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100/50" 
-                  : "bg-stone-100 border-stone-200 text-stone-500 hover:bg-stone-200/50 hover:text-stone-800"
+                  ? "bg-emerald-50/80 border-emerald-200 text-emerald-600 hover:bg-emerald-100/50" 
+                  : "bg-stone-100/80 border-stone-200 text-stone-500 hover:bg-stone-200/50 hover:text-stone-800"
               }`}
               title="Cấu hình API Key"
             >
@@ -425,7 +433,7 @@ export default function App() {
 
       {/* API Key settings panel */}
       {showApiKeyInput && (
-        <div className="bg-amber-50/30 border-b border-stone-200/30 px-4 py-4 md:px-8">
+        <div className="bg-amber-50/20 border-b border-stone-200/20 px-4 py-4 md:px-8 z-20 relative backdrop-blur-xs">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
               <h3 className="text-xs font-semibold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
@@ -450,7 +458,7 @@ export default function App() {
                   }
                 }}
                 placeholder="AIzaSy..."
-                className="w-full md:w-80 px-3 py-1.5 border border-stone-200 rounded-lg text-xs bg-white focus:outline-hidden focus:ring-1 focus:ring-amber-500/30 focus:border-amber-500 text-stone-800 font-mono"
+                className="w-full md:w-80 px-3 py-1.5 border border-stone-200 rounded-lg text-xs bg-white/80 focus:outline-hidden focus:ring-1 focus:ring-amber-500/30 focus:border-amber-500 text-stone-800 font-mono"
               />
               {userApiKey && (
                 <button
@@ -458,7 +466,7 @@ export default function App() {
                     setUserApiKey("");
                     localStorage.removeItem("artistic_muse_api_key");
                   }}
-                  className="px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-600 rounded-lg text-xs hover:bg-rose-100/50 transition-colors whitespace-nowrap cursor-pointer font-medium"
+                  className="px-3 py-1.5 bg-rose-50/80 border border-rose-200 text-rose-600 rounded-lg text-xs hover:bg-rose-100/50 transition-colors whitespace-nowrap cursor-pointer font-medium"
                 >
                   Xóa Key
                 </button>
@@ -475,85 +483,92 @@ export default function App() {
       )}
 
       {/* Main Workspace Frame */}
-      <main className="flex-grow w-full max-w-7xl mx-auto px-4 py-8 md:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        {/* Left column: Writer Workbench (Muse Console) - col-span-5 */}
-        <div className="lg:col-span-5 space-y-6">
-          <MuseConsole
-            space={activeSpace}
-            subType={subType}
-            setSubType={setSubType}
-            rawContent={rawContent}
-            setRawContent={setRawContent}
-            promptHint={promptHint}
-            setPromptHint={setPromptHint}
-            loading={loading}
-            onGenerate={handleGenerate}
-            response={currentResponse}
-            onSaveCreation={handleSaveCreation}
-            isSaved={isSaved}
-            error={error}
-            onOpenSettings={() => setShowApiKeyInput(true)}
-          />
-        </div>
-
-        {/* Right column: Graphic Exhibition (Visual Canvas & History) - col-span-7 */}
-        <div className="lg:col-span-7 space-y-8">
-          {currentResponse ? (
-            <VisualCanvas
-              creation={{
-                title: currentResponse.title || activeCreationId ? savedCreations.find(c => c.id === activeCreationId)?.title : undefined,
-                refinedContent: currentResponse.refinedContent,
-                artisticSuggestion: currentResponse.artisticSuggestion,
-                customBg: currentResponse.customBg,
-                customText: currentResponse.customText,
-                customAccent: currentResponse.customAccent,
-                customDisplayFont: currentResponse.customDisplayFont,
-                customBodyFont: currentResponse.customBodyFont,
-                customFontSize: currentResponse.customFontSize,
-                customAlignment: currentResponse.customAlignment,
-              } as any}
-              onUpdateCustomization={handleUpdateCustomization}
+      <main className="flex-grow w-full max-w-7xl mx-auto px-4 py-8 md:px-8 relative z-10">
+        <motion.div
+          key={activeSpace}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -15 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
+        >
+          {/* Left column: Writer Workbench (Muse Console) - col-span-5 */}
+          <div className="lg:col-span-5 space-y-6">
+            <MuseConsole
+              space={activeSpace}
+              subType={subType}
+              setSubType={setSubType}
+              rawContent={rawContent}
+              setRawContent={setRawContent}
+              promptHint={promptHint}
+              setPromptHint={setPromptHint}
+              loading={loading}
+              onGenerate={handleGenerate}
+              response={currentResponse}
+              onSaveCreation={handleSaveCreation}
+              isSaved={isSaved}
+              error={error}
+              onOpenSettings={() => setShowApiKeyInput(true)}
             />
-          ) : (
-            <div className="p-12 text-center border-2 border-dashed border-stone-200 rounded-3xl bg-stone-50/30 flex flex-col items-center justify-center min-h-[400px]">
-              <div className="w-14 h-14 rounded-full bg-stone-100 flex items-center justify-center text-stone-400 mb-4 animate-pulse">
-                <FileText className="w-6 h-6" />
+          </div>
+
+          {/* Right column: Graphic Exhibition (Visual Canvas & History) - col-span-7 */}
+          <div className="lg:col-span-7 space-y-8">
+            {currentResponse ? (
+              <VisualCanvas
+                creation={{
+                  title: currentResponse.title || activeCreationId ? savedCreations.find(c => c.id === activeCreationId)?.title : undefined,
+                  refinedContent: currentResponse.refinedContent,
+                  artisticSuggestion: currentResponse.artisticSuggestion,
+                  customBg: currentResponse.customBg,
+                  customText: currentResponse.customText,
+                  customAccent: currentResponse.customAccent,
+                  customDisplayFont: currentResponse.customDisplayFont,
+                  customBodyFont: currentResponse.customBodyFont,
+                  customFontSize: currentResponse.customFontSize,
+                  customAlignment: currentResponse.customAlignment,
+                } as any}
+                onUpdateCustomization={handleUpdateCustomization}
+              />
+            ) : (
+              <div className="p-12 text-center border border-dashed border-stone-200/80 rounded-3xl bg-white/40 backdrop-blur-md flex flex-col items-center justify-center min-h-[400px] shadow-sm">
+                <div className="w-14 h-14 rounded-full bg-white/80 border border-stone-100 flex items-center justify-center text-stone-400 mb-4 animate-pulse">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <h3 className="font-serif text-lg font-bold text-stone-700">Chờ đợi ngọn lửa thi ca</h3>
+                <p className="text-xs text-stone-500 max-w-sm mt-2 leading-relaxed">
+                  Khi bạn nhập bản thảo và gởi thỉnh cầu, Nàng Thơ sẽ bắt đầu phân tích nghệ thuật, dệt chữ và kiến tạo một bức tranh họa thơ tuyệt mỹ ở đây.
+                </p>
               </div>
-              <h3 className="font-serif text-lg font-bold text-stone-700">Chờ đợi ngọn lửa thi ca</h3>
-              <p className="text-xs text-stone-500 max-w-sm mt-2 leading-relaxed">
-                Khi bạn nhập bản thảo và gởi thỉnh cầu, Nàng Thơ sẽ bắt đầu phân tích nghệ thuật, dệt chữ và kiến tạo một bức tranh họa thơ tuyệt mỹ ở đây.
-              </p>
-            </div>
-          )}
+            )}
 
-          {/* Extra utility row: Prompts & History bento block */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-200/50">
-            {/* Writing Assistant Prompts */}
-            <div className="bg-white border border-stone-100 p-5 rounded-2xl shadow-xs">
-              <PromptSuggestions
-                space={activeSpace}
-                onSelectPrompt={handleSelectPrompt}
-                onSelectDirective={handleSelectDirective}
-              />
-            </div>
+            {/* Extra utility row: Prompts & History bento block */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-200/30">
+              {/* Writing Assistant Prompts */}
+              <div className="bg-white/60 backdrop-blur-md border border-white/40 p-5 rounded-2xl shadow-xs">
+                <PromptSuggestions
+                  space={activeSpace}
+                  onSelectPrompt={handleSelectPrompt}
+                  onSelectDirective={handleSelectDirective}
+                />
+              </div>
 
-            {/* Collection Catalog History */}
-            <div className="bg-white border border-stone-100 p-5 rounded-2xl shadow-xs">
-              <CreationHistory
-                creations={savedCreations}
-                onSelectCreation={handleSelectCreation}
-                onDeleteCreation={handleDeleteCreation}
-                activeId={activeCreationId}
-              />
+              {/* Collection Catalog History */}
+              <div className="bg-white/60 backdrop-blur-md border border-white/40 p-5 rounded-2xl shadow-xs">
+                <CreationHistory
+                  creations={savedCreations}
+                  onSelectCreation={handleSelectCreation}
+                  onDeleteCreation={handleDeleteCreation}
+                  activeId={activeCreationId}
+                />
+              </div>
             </div>
           </div>
-        </div>
-
+        </motion.div>
       </main>
 
       {/* Footer Details */}
-      <footer className="border-t border-stone-200/40 bg-stone-50/50 py-8 px-4 mt-12 text-center text-xs text-stone-500">
+      <footer className="border-t border-stone-200/30 bg-white/40 backdrop-blur-xs py-8 px-4 mt-12 text-center text-xs text-stone-500 relative z-10">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="font-serif font-medium">© 2026 Nàng Thơ Kỹ Thuật Số. Nơi con chữ chạm vào rung cảm của tâm hồn.</p>
           <div className="flex gap-4 items-center font-mono text-[10px] text-stone-400">
