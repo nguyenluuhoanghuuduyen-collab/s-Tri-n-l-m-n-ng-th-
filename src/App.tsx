@@ -6,8 +6,8 @@ import VisualCanvas from "./components/VisualCanvas";
 import PromptSuggestions from "./components/PromptSuggestions";
 import CreationHistory from "./components/CreationHistory";
 import { HeartHandshake, BookOpen, Sparkles, Compass, Feather, Archive, FileText, Info, Key } from "lucide-react";
-import BackgroundEffect from "./components/BackgroundEffect";
-import AmbientPlayer from "./components/AmbientPlayer";
+import BackgroundEffect from "../BackgroundEffect";
+import AmbientPlayer from "../AmbientPlayer";
 import { motion } from "motion/react";
 
 // Pre-loaded stunning demo creations to prevent blank cold-start
