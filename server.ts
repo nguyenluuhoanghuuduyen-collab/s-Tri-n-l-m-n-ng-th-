@@ -44,9 +44,30 @@ Bạn PHẢI trả về phản hồi dưới dạng JSON có cấu trúc chính 
 `;
 
 app.post("/api/muse", async (req, res) => {
-  if (!ai) {
+  const clientApiKey = req.headers["x-api-key"] || req.headers["x-gemini-api-key"];
+  
+  let activeAi = ai;
+  if (clientApiKey && typeof clientApiKey === "string") {
+    try {
+      activeAi = new GoogleGenAI({
+        apiKey: clientApiKey,
+        httpOptions: {
+          headers: {
+            "User-Agent": "aistudio-build",
+          },
+        },
+      });
+    } catch (e: any) {
+      return res.status(400).json({
+        error: "Khóa API Key được gửi từ giao diện không hợp lệ.",
+        details: e.message,
+      });
+    }
+  }
+
+  if (!activeAi) {
     return res.status(500).json({
-      error: "Gemini API key is not configured. Please set it in Settings > Secrets.",
+      error: "Không tìm thấy khóa Gemini API Key. Hãy cấu hình API Key trong phần Cài đặt ở góc giao diện.",
     });
   }
 
@@ -68,7 +89,7 @@ ${content}
 """
 `;
 
-    const response = await ai.models.generateContent({
+    const response = await activeAi.models.generateContent({
       model: "gemini-3.5-flash",
       contents: userPrompt,
       config: {
