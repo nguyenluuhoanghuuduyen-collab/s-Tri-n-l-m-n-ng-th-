@@ -149,7 +149,7 @@ export default function VisualCanvas({ creation, onUpdateCustomization }: Visual
   return (
     <div className="flex flex-col gap-6">
       {/* Visual Workspace Controller */}
-      <div className="p-5 bg-white border border-stone-100 rounded-2xl shadow-xs">
+      <div className="p-5 bg-white/50 backdrop-blur-md border border-stone-200/40 rounded-2xl shadow-xs">
         <h3 className="font-serif text-lg font-medium text-stone-800 flex items-center gap-2 mb-4">
           <Palette className="w-4 h-4 text-amber-600" />
           Phòng Trưng Bày & Thiết Kế
@@ -459,7 +459,7 @@ export default function VisualCanvas({ creation, onUpdateCustomization }: Visual
       </div>
 
       {/* Aesthetic suggestions details print */}
-      <div className="p-4 bg-amber-50/40 border border-amber-200/50 rounded-xl">
+      <div className="p-4 bg-white/40 backdrop-blur-md border border-stone-200/30 rounded-xl">
         <h4 className="text-xs font-semibold text-stone-700 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-amber-500" />
           Ý Tưởng Thiết Kế của Nàng Thơ
