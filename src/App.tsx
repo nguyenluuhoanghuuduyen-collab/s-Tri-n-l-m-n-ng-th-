@@ -5,7 +5,7 @@ import MuseConsole from "./components/MuseConsole";
 import VisualCanvas from "./components/VisualCanvas";
 import PromptSuggestions from "./components/PromptSuggestions";
 import CreationHistory from "./components/CreationHistory";
-import { HeartHandshake, BookOpen, Sparkles, Compass, Feather, Archive, FileText, Info } from "lucide-react";
+import { HeartHandshake, BookOpen, Sparkles, Compass, Feather, Archive, FileText, Info, Key } from "lucide-react";
 
 // Pre-loaded stunning demo creations to prevent blank cold-start
 const INITIAL_DEMOS: Record<CreativeSpace, SavedCreation> = {
@@ -138,6 +138,16 @@ export default function App() {
   const [activeCreationId, setActiveCreationId] = useState<string | undefined>(undefined);
   const [isSaved, setIsSaved] = useState<boolean>(false);
 
+  // API Key management
+  const [userApiKey, setUserApiKey] = useState<string>(() => {
+    try {
+      return localStorage.getItem("artistic_muse_api_key") || "";
+    } catch {
+      return "";
+    }
+  });
+  const [showApiKeyInput, setShowApiKeyInput] = useState<boolean>(false);
+
   // Initialize and load saved creations from localStorage
   useEffect(() => {
     try {
@@ -163,7 +173,8 @@ export default function App() {
       artisticSuggestion: demo.artisticSuggestion,
       closingThought: demo.closingThought,
       questions: demo.questions,
-    });
+      title: demo.title, // Load demo title correctly
+    } as any);
     setActiveCreationId(demo.id);
     setIsSaved(true);
     setError(null);
@@ -194,9 +205,14 @@ export default function App() {
     setActiveCreationId(undefined);
 
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (userApiKey) {
+        headers["x-api-key"] = userApiKey;
+      }
+
       const res = await fetch("/api/muse", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           content: rawContent,
           space: activeSpace,
@@ -206,8 +222,20 @@ export default function App() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Giao tiếp với Nàng Thơ bị gián đoạn.");
+        let errorMessage = "Giao tiếp với Nàng Thơ bị gián đoạn.";
+        try {
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const errorData = await res.json();
+            errorMessage = errorData.error || errorMessage;
+          } else {
+            const textData = await res.text();
+            errorMessage = textData.substring(0, 150) || errorMessage;
+          }
+        } catch (e) {
+          console.error("Failed to parse error response:", e);
+        }
+        throw new Error(errorMessage);
       }
 
       const data: MuseResponse = await res.json();
@@ -223,18 +251,29 @@ export default function App() {
   const handleSaveCreation = () => {
     if (!currentResponse) return;
     
+    const responseWithCustom = currentResponse as any;
+    
     const newCreation: SavedCreation = {
       id: `creation_${Date.now()}`,
-      title: currentResponse.refinedContent.split("\n")[0]?.substring(0, 30) || "Tác phẩm mới",
+      title: responseWithCustom.title || responseWithCustom.refinedContent.split("\n")[0]?.substring(0, 30) || "Tác phẩm mới",
       space: activeSpace,
       subType: activeSpace === "creative" ? subType : "",
       rawContent,
-      inspirationSpark: currentResponse.inspirationSpark,
-      refinedContent: currentResponse.refinedContent,
-      artisticSuggestion: currentResponse.artisticSuggestion,
-      closingThought: currentResponse.closingThought,
-      questions: currentResponse.questions,
+      inspirationSpark: responseWithCustom.inspirationSpark,
+      refinedContent: responseWithCustom.refinedContent,
+      artisticSuggestion: responseWithCustom.artisticSuggestion,
+      closingThought: responseWithCustom.closingThought,
+      questions: responseWithCustom.questions,
       createdAt: new Date().toISOString(),
+      
+      // Preserve custom styling if present
+      customBg: responseWithCustom.customBg,
+      customText: responseWithCustom.customText,
+      customAccent: responseWithCustom.customAccent,
+      customDisplayFont: responseWithCustom.customDisplayFont,
+      customBodyFont: responseWithCustom.customBodyFont,
+      customFontSize: responseWithCustom.customFontSize,
+      customAlignment: responseWithCustom.customAlignment,
     };
 
     const nextCreations = [newCreation, ...savedCreations];
@@ -262,13 +301,24 @@ export default function App() {
     }
     setRawContent(creation.rawContent);
     setPromptHint("");
+    
+    // Copy all custom styles and title back to currentResponse
     setCurrentResponse({
       inspirationSpark: creation.inspirationSpark,
       refinedContent: creation.refinedContent,
       artisticSuggestion: creation.artisticSuggestion,
       closingThought: creation.closingThought,
       questions: creation.questions,
-    });
+      title: creation.title,
+      customBg: creation.customBg,
+      customText: creation.customText,
+      customAccent: creation.customAccent,
+      customDisplayFont: creation.customDisplayFont,
+      customBodyFont: creation.customBodyFont,
+      customFontSize: creation.customFontSize,
+      customAlignment: creation.customAlignment,
+    } as any);
+    
     setActiveCreationId(creation.id);
     setIsSaved(true);
   };
@@ -334,31 +384,95 @@ export default function App() {
             </div>
           </div>
 
-          {/* Functional Spaces Ribbon Switcher */}
-          <nav className="flex bg-stone-100 p-1 rounded-xl border border-stone-200 shadow-sm max-w-full overflow-x-auto">
-            {(["diary", "prose", "creative", "criticism"] as const).map((space) => {
-              const active = activeSpace === space;
-              return (
-                <button
-                  key={space}
-                  onClick={() => handleSpaceChange(space)}
-                  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap cursor-pointer ${
-                    active
-                      ? "bg-white text-stone-800 shadow-xs"
-                      : "text-stone-500 hover:text-stone-800"
-                  }`}
-                >
-                  {space === "diary" && <HeartHandshake className="w-3.5 h-3.5 text-rose-500/80" />}
-                  {space === "prose" && <BookOpen className="w-3.5 h-3.5 text-sky-500/80" />}
-                  {space === "creative" && <Sparkles className="w-3.5 h-3.5 text-amber-500/80" />}
-                  {space === "criticism" && <Compass className="w-3.5 h-3.5 text-indigo-500/80" />}
-                  {SPACE_LABELS[space].title.split(" ")[0]}
-                </button>
-              );
-            })}
-          </nav>
+          {/* Functional Spaces Ribbon Switcher & Settings */}
+          <div className="flex items-center gap-3 max-w-full">
+            <nav className="flex bg-stone-100 p-1 rounded-xl border border-stone-200 shadow-sm max-w-full overflow-x-auto">
+              {(["diary", "prose", "creative", "criticism"] as const).map((space) => {
+                const active = activeSpace === space;
+                return (
+                  <button
+                    key={space}
+                    onClick={() => handleSpaceChange(space)}
+                    className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+                      active
+                        ? "bg-white text-stone-800 shadow-xs"
+                        : "text-stone-500 hover:text-stone-800"
+                    }`}
+                  >
+                    {space === "diary" && <HeartHandshake className="w-3.5 h-3.5 text-rose-500/80" />}
+                    {space === "prose" && <BookOpen className="w-3.5 h-3.5 text-sky-500/80" />}
+                    {space === "creative" && <Sparkles className="w-3.5 h-3.5 text-amber-500/80" />}
+                    {space === "criticism" && <Compass className="w-3.5 h-3.5 text-indigo-500/80" />}
+                    {SPACE_LABELS[space].title.split(" ")[0]}
+                  </button>
+                );
+              })}
+            </nav>
+            <button
+              onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+              className={`p-2.5 rounded-xl border transition-all cursor-pointer flex-shrink-0 ${
+                userApiKey 
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100/50" 
+                  : "bg-stone-100 border-stone-200 text-stone-500 hover:bg-stone-200/50 hover:text-stone-800"
+              }`}
+              title="Cấu hình API Key"
+            >
+              <Key className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </header>
+
+      {/* API Key settings panel */}
+      {showApiKeyInput && (
+        <div className="bg-amber-50/30 border-b border-stone-200/30 px-4 py-4 md:px-8">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h3 className="text-xs font-semibold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
+                <Key className="w-3.5 h-3.5 text-amber-600" />
+                Cấu hình Gemini API Key
+              </h3>
+              <p className="text-[11px] text-stone-500">
+                Nhập API Key của bạn để sử dụng nếu máy chủ chưa cấu hình sẵn hoặc bạn muốn dùng tài khoản riêng. Key được lưu trên trình duyệt của bạn.
+              </p>
+            </div>
+            <div className="flex gap-2 w-full md:w-auto items-center">
+              <input
+                type="password"
+                value={userApiKey}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setUserApiKey(val);
+                  if (val.trim()) {
+                    localStorage.setItem("artistic_muse_api_key", val.trim());
+                  } else {
+                    localStorage.removeItem("artistic_muse_api_key");
+                  }
+                }}
+                placeholder="AIzaSy..."
+                className="w-full md:w-80 px-3 py-1.5 border border-stone-200 rounded-lg text-xs bg-white focus:outline-hidden focus:ring-1 focus:ring-amber-500/30 focus:border-amber-500 text-stone-800 font-mono"
+              />
+              {userApiKey && (
+                <button
+                  onClick={() => {
+                    setUserApiKey("");
+                    localStorage.removeItem("artistic_muse_api_key");
+                  }}
+                  className="px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-600 rounded-lg text-xs hover:bg-rose-100/50 transition-colors whitespace-nowrap cursor-pointer font-medium"
+                >
+                  Xóa Key
+                </button>
+              )}
+              <button
+                onClick={() => setShowApiKeyInput(false)}
+                className="px-3 py-1.5 bg-stone-800 border border-stone-900 text-white rounded-lg text-xs hover:bg-stone-900 transition-colors whitespace-nowrap cursor-pointer font-medium"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Workspace Frame */}
       <main className="flex-grow w-full max-w-7xl mx-auto px-4 py-8 md:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -379,6 +493,7 @@ export default function App() {
             onSaveCreation={handleSaveCreation}
             isSaved={isSaved}
             error={error}
+            onOpenSettings={() => setShowApiKeyInput(true)}
           />
         </div>
 
