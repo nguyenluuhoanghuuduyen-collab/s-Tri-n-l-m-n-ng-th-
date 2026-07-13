@@ -18,6 +18,7 @@ interface MuseConsoleProps {
   onSaveCreation: () => void;
   isSaved: boolean;
   error: string | null;
+  onOpenSettings?: () => void;
 }
 
 export default function MuseConsole({
@@ -34,6 +35,7 @@ export default function MuseConsole({
   onSaveCreation,
   isSaved,
   error,
+  onOpenSettings,
 }: MuseConsoleProps) {
   const spaceInfo = SPACE_LABELS[space];
 
@@ -154,6 +156,14 @@ export default function MuseConsole({
           <div>
             <p className="font-semibold">Lỗi cấu hình hoặc kết nối</p>
             <p className="mt-0.5 leading-relaxed">{error}</p>
+            {(error.toLowerCase().includes("api key") || error.toLowerCase().includes("khóa")) && onOpenSettings && (
+              <button 
+                onClick={onOpenSettings}
+                className="mt-2 text-[11px] font-semibold text-rose-800 underline hover:text-rose-950 block cursor-pointer"
+              >
+                Cài đặt API Key của bạn ngay
+              </button>
+            )}
           </div>
         </div>
       )}
