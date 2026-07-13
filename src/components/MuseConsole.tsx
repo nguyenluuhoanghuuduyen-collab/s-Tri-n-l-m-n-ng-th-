@@ -48,7 +48,7 @@ export default function MuseConsole({
   return (
     <div className="space-y-6">
       {/* Space Header & Info Card */}
-      <div className="p-5 bg-gradient-to-br from-amber-50/60 to-stone-50 border border-amber-100/40 rounded-2xl">
+      <div className="p-5 bg-white/40 backdrop-blur-md border border-stone-200/40 rounded-2xl shadow-xs">
         <div className="flex items-start gap-3.5">
           <div className="p-2.5 bg-amber-100/50 rounded-xl text-amber-800">
             <Feather className="w-5 h-5" />
@@ -56,7 +56,7 @@ export default function MuseConsole({
           <div>
             <h2 className="font-serif text-lg font-bold text-stone-800 flex items-center gap-2">
               {spaceInfo.title}
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-normal uppercase tracking-wider">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-800 font-normal uppercase tracking-wider">
                 {spaceInfo.subtitle}
               </span>
             </h2>
@@ -78,7 +78,7 @@ export default function MuseConsole({
                   className={`px-3 py-1 text-xs rounded-full border transition-all cursor-pointer ${
                     subType === type
                       ? "bg-amber-600 text-white border-amber-700 shadow-xs"
-                      : "bg-white text-stone-600 border-stone-200 hover:border-amber-300"
+                      : "bg-white/80 text-stone-600 border-stone-200 hover:border-amber-300"
                   }`}
                 >
                   {type}
@@ -90,7 +90,7 @@ export default function MuseConsole({
       </div>
 
       {/* Draft Input Workspace */}
-      <div className="p-5 bg-white border border-stone-100 rounded-2xl shadow-xs space-y-4">
+      <div className="p-5 bg-white/50 backdrop-blur-md border border-stone-200/40 rounded-2xl shadow-xs space-y-4">
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider flex items-center gap-1">
@@ -178,7 +178,7 @@ export default function MuseConsole({
             className="space-y-5"
           >
             {/* Companion Feedback Card */}
-            <div className="bg-white border border-stone-100 rounded-2xl p-5 shadow-xs space-y-4">
+            <div className="bg-white/60 backdrop-blur-md border border-white/50 rounded-2xl p-5 shadow-xs space-y-4">
               
               {/* Inspiration Spark */}
               <div>
@@ -191,14 +191,14 @@ export default function MuseConsole({
                 </p>
               </div>
 
-              <div className="h-px bg-stone-100" />
+              <div className="h-px bg-stone-100/40" />
 
               {/* Refined content visual highlight */}
               <div>
                 <h4 className="text-[10px] uppercase font-mono tracking-widest text-stone-500 mb-2">
                   Tác Phẩm Được Chau Chuốt
                 </h4>
-                <div className="bg-stone-50 p-4 rounded-xl text-stone-800 text-sm leading-relaxed whitespace-pre-wrap font-serif">
+                <div className="bg-white/80 border border-stone-200/30 p-4 rounded-xl text-stone-800 text-sm leading-relaxed whitespace-pre-wrap font-serif shadow-2xs">
                   {response.refinedContent}
                 </div>
               </div>
