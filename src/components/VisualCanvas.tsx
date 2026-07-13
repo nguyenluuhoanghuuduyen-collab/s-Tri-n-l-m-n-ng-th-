@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { SavedCreation } from "../types";
 import { PASTEL_BACKGROUNDS, FONT_PAIRINGS } from "../data/prompts";
 import { toPng } from "html-to-image";
-import { Download, RefreshCw, Type as FontIcon, Palette, AlignLeft, AlignCenter, AlignRight, AlignJustify, Sparkles, Check, Share2 } from "lucide-react";
+import { Download, RefreshCw, Palette, AlignLeft, AlignCenter, AlignRight, AlignJustify, Sparkles, Check, Copy, Image } from "lucide-react";
 import { motion } from "motion/react";
 
 interface VisualCanvasProps {
@@ -24,6 +24,11 @@ export default function VisualCanvas({ creation, onUpdateCustomization }: Visual
   const [downloading, setDownloading] = useState(false);
   const [showDecorations, setShowDecorations] = useState(true);
   const [titleText, setTitleText] = useState(creation.title || "Tác phẩm Không Tên");
+
+  // Copy states
+  const [copiedText, setCopiedText] = useState(false);
+  const [copyingImage, setCopyingImage] = useState(false);
+  const [copiedImage, setCopiedImage] = useState(false);
 
   // Local customized states, synchronized with creation properties
   const [bg, setBg] = useState(creation.customBg || creation.artisticSuggestion?.colorPalette?.bg || "#FDFBF7");
@@ -49,6 +54,46 @@ export default function VisualCanvas({ creation, onUpdateCustomization }: Visual
   const handleCustomChange = (updatedFields: Parameters<NonNullable<typeof onUpdateCustomization>>[0]) => {
     if (onUpdateCustomization) {
       onUpdateCustomization(updatedFields);
+    }
+  };
+
+  const handleCopyText = async () => {
+    try {
+      await navigator.clipboard.writeText(creation.refinedContent || "");
+      setCopiedText(true);
+      setTimeout(() => setCopiedText(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy text:", err);
+    }
+  };
+
+  const handleCopyImage = async () => {
+    if (!canvasRef.current) return;
+    setCopyingImage(true);
+    try {
+      // Small timeout to ensure visual rendering
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const dataUrl = await toPng(canvasRef.current, {
+        quality: 0.98,
+        pixelRatio: 2,
+        style: {
+          transform: "scale(1)",
+          borderRadius: "0",
+        },
+      });
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          [blob.type]: blob,
+        }),
+      ]);
+      setCopiedImage(true);
+      setTimeout(() => setCopiedImage(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy image to clipboard:", error);
+    } finally {
+      setCopyingImage(false);
     }
   };
 
@@ -351,9 +396,52 @@ export default function VisualCanvas({ creation, onUpdateCustomization }: Visual
         {/* Float Controls for Download / Action */}
         <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
           <button
+            onClick={handleCopyText}
+            className="flex items-center gap-1.5 bg-stone-900/90 text-white backdrop-blur-xs px-3 py-1.5 rounded-full text-xs hover:bg-stone-800 active:scale-95 transition-all shadow-md cursor-pointer"
+            title="Sao chép lời thơ/văn đã tinh chỉnh"
+          >
+            {copiedText ? (
+              <>
+                <Check className="w-3 h-3 text-emerald-400" />
+                Đã sao chép chữ
+              </>
+            ) : (
+              <>
+                <Copy className="w-3 h-3" />
+                Sao chép chữ
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={handleCopyImage}
+            disabled={copyingImage}
+            className="flex items-center gap-1.5 bg-stone-900/90 text-white backdrop-blur-xs px-3 py-1.5 rounded-full text-xs hover:bg-stone-800 active:scale-95 transition-all shadow-md cursor-pointer"
+            title="Sao chép ảnh thẻ thư họa vào bộ nhớ tạm"
+          >
+            {copyingImage ? (
+              <>
+                <RefreshCw className="w-3 h-3 animate-spin" />
+                Đang chụp thẻ...
+              </>
+            ) : copiedImage ? (
+              <>
+                <Check className="w-3 h-3 text-emerald-400" />
+                Đã sao chép ảnh
+              </>
+            ) : (
+              <>
+                <Image className="w-3 h-3" />
+                Sao chép ảnh
+              </>
+            )}
+          </button>
+
+          <button
             onClick={handleDownload}
             disabled={downloading}
             className="flex items-center gap-1.5 bg-stone-900/90 text-white backdrop-blur-xs px-3 py-1.5 rounded-full text-xs hover:bg-stone-800 active:scale-95 transition-all shadow-md cursor-pointer"
+            title="Tải ảnh thẻ thư họa về máy"
           >
             {downloading ? (
               <>
